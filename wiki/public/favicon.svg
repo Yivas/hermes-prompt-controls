@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title">
+  <title id="title">Hermes Prompt Controls</title>
+  <style>
+    .bg{fill:#111827}.mark{fill:#fff}
+    @media (prefers-color-scheme:dark){.bg{fill:#f9fafb}.mark{fill:#111827}}
+  </style>
+  <rect class="bg" width="32" height="32" rx="7"/>
+  <path class="mark" d="M8 7h9c5 0 8 3 8 7s-3 7-8 7h-5v4H8zm4 4v6h5c2.5 0 4-1 4-3s-1.5-3-4-3z"/>
+</svg>

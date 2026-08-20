@@ -92,8 +92,8 @@ jobs:
                   raise SystemExit(f"unexpected wheel entries: {sorted(names ^ allowed)}")
               for info in infos:
                   mode = info.external_attr >> 16
-                  if stat.S_ISLNK(mode):
-                      raise SystemExit(f"wheel contains symlink: {info.filename}")
+                  if mode and not stat.S_ISREG(mode):
+                      raise SystemExit(f"wheel contains non-regular entry: {info.filename}")
 
           with tarfile.open(sdist, "r:*") as archive:
               members = archive.getmembers()
