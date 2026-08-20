@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-prompt-controls"
+version = "0.0.0"
+description = "Unofficial Hermes Agent prompt-control plugin"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Yivas" }]
+keywords = ["hermes-agent", "llm", "plugin", "prompt-controls", "system-prompt"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://yivas.github.io/hermes-prompt-controls/"
+Documentation = "https://yivas.github.io/hermes-prompt-controls/"
+Repository = "https://github.com/Yivas/hermes-prompt-controls"
+Issues = "https://github.com/Yivas/hermes-prompt-controls/issues"
+Changelog = "https://github.com/Yivas/hermes-prompt-controls/blob/main/CHANGELOG.md"
+
+[project.entry-points."hermes_agent.plugins"]
+prompt-controls = "hermes_prompt_controls"
+
+[tool.setuptools.packages.find]
+where = ["src"]

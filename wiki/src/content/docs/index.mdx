@@ -1,0 +1,29 @@
+---
+title: Hermes Prompt Controls
+description: An unofficial plugin proof for explicit per-model system prompt controls in Hermes Agent.
+hero:
+  tagline: Apply explicit, local system directives through the public Hermes Agent plugin contract.
+  actions:
+    - text: Development setup
+      link: /hermes-prompt-controls/getting-started/development-setup/
+      icon: right-arrow
+    - text: Supported contract
+      link: /hermes-prompt-controls/contract/system-directives/
+      variant: minimal
+---
+
+Hermes Prompt Controls is an unofficial community plugin in pre-release development. It proves one
+small contract against a fixed Hermes Agent baseline: compose fictional local directives and modify
+a copied `chat_completions` request through public plugin middleware.
+
+## Current boundary
+
+- No package release or stable API exists.
+- Only `chat_completions` and textual `system` content are supported.
+- The pinned host is fail-open; the plugin is not an enforcement boundary.
+- The repository contains no operational directives, mappings, profiles, prefills, session state,
+  credentials, conversation data or telemetry.
+
+Start with [Development setup](/hermes-prompt-controls/getting-started/development-setup/), then read
+the [system directive contract](/hermes-prompt-controls/contract/system-directives/) and
+[compatibility evidence](/hermes-prompt-controls/reference/compatibility/).

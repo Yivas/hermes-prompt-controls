@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible defect using fictional prompt-control data.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include real directives, mappings, prompt content, profiles, prefills, session IDs, credentials, endpoints, configuration, logs, or caches. Report vulnerabilities through the Security tab.
+  - type: input
+    id: plugin_commit
+    attributes:
+      label: Plugin commit
+      placeholder: Full commit SHA
+    validations:
+      required: true
+  - type: input
+    id: hermes_version
+    attributes:
+      label: Hermes Agent version or commit
+      placeholder: v2026.8.13 / f80f453a...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python version, and installation method.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal fictional reproduction
+      description: Include only the smallest fictional config, directives and command or request shape needed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched open and closed issues.
+          required: true
+        - label: I replaced all operational data with fictional values.
+          required: true
+        - label: This is not an undisclosed security vulnerability.
+          required: true

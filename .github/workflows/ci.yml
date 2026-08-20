@@ -1,0 +1,132 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    runs-on: ubuntu-latest
+    env:
+      HERMES_COMMIT: f80f453ae0679347e38abc917c7f94f717bf96c5
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install build tools
+        run: python -m pip install --disable-pip-version-check build twine
+      - name: Check out the pinned Hermes Agent host
+        shell: bash
+        run: |
+          git clone --filter=blob:none https://github.com/NousResearch/hermes-agent.git "$RUNNER_TEMP/hermes-agent"
+          git -C "$RUNNER_TEMP/hermes-agent" checkout --detach "$HERMES_COMMIT"
+      - name: Install host and plugin
+        shell: bash
+        run: |
+          python -m pip install -e "$RUNNER_TEMP/hermes-agent"
+          python -m pip install -e .
+      - name: Compile source and tests
+        run: python -m compileall -q src tests
+      - name: Run compatibility tests
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/hermes-agent"
+          python -m unittest discover -s "$GITHUB_WORKSPACE/tests" -v
+      - name: Build and check distributions
+        run: |
+          python -m build
+          python -m twine check dist/*
+      - name: Inspect distribution contents
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import stat
+          import tarfile
+          import zipfile
+
+          artifacts = sorted(Path("dist").iterdir())
+          if len(artifacts) != 2:
+              raise SystemExit(f"expected one wheel and one sdist, found: {artifacts}")
+
+          wheel = next((path for path in artifacts if path.suffix == ".whl"), None)
+          sdist = next((path for path in artifacts if path.name.endswith(".tar.gz")), None)
+          if wheel is None or sdist is None:
+              raise SystemExit("expected one .whl and one .tar.gz artifact")
+
+          with zipfile.ZipFile(wheel) as archive:
+              infos = archive.infolist()
+              names = {info.filename for info in infos}
+              dist_info = {
+                  name.split("/", 1)[0]
+                  for name in names
+                  if name.endswith(".dist-info/METADATA")
+              }
+              if len(dist_info) != 1:
+                  raise SystemExit(f"unexpected wheel metadata roots: {dist_info}")
+              metadata_root = dist_info.pop()
+              allowed = {
+                  "hermes_prompt_controls/__init__.py",
+                  f"{metadata_root}/licenses/LICENSE",
+                  f"{metadata_root}/METADATA",
+                  f"{metadata_root}/WHEEL",
+                  f"{metadata_root}/entry_points.txt",
+                  f"{metadata_root}/top_level.txt",
+                  f"{metadata_root}/RECORD",
+              }
+              if names != allowed:
+                  raise SystemExit(f"unexpected wheel entries: {sorted(names ^ allowed)}")
+              for info in infos:
+                  mode = info.external_attr >> 16
+                  if stat.S_ISLNK(mode):
+                      raise SystemExit(f"wheel contains symlink: {info.filename}")
+
+          with tarfile.open(sdist, "r:*") as archive:
+              members = archive.getmembers()
+              roots = {PurePosixPath(member.name).parts[0] for member in members}
+              if len(roots) != 1:
+                  raise SystemExit(f"unexpected sdist roots: {roots}")
+              root = roots.pop()
+              allowed = {
+                  root,
+                  f"{root}/LICENSE",
+                  f"{root}/PKG-INFO",
+                  f"{root}/README.md",
+                  f"{root}/pyproject.toml",
+                  f"{root}/setup.cfg",
+                  f"{root}/src",
+                  f"{root}/src/hermes_prompt_controls",
+                  f"{root}/src/hermes_prompt_controls/__init__.py",
+                  f"{root}/src/hermes_prompt_controls.egg-info",
+                  f"{root}/src/hermes_prompt_controls.egg-info/PKG-INFO",
+                  f"{root}/src/hermes_prompt_controls.egg-info/SOURCES.txt",
+                  f"{root}/src/hermes_prompt_controls.egg-info/dependency_links.txt",
+                  f"{root}/src/hermes_prompt_controls.egg-info/entry_points.txt",
+                  f"{root}/src/hermes_prompt_controls.egg-info/top_level.txt",
+                  f"{root}/tests",
+                  f"{root}/tests/test_registration.py",
+              }
+              names = {member.name for member in members}
+              if names != allowed:
+                  raise SystemExit(f"unexpected sdist entries: {sorted(names ^ allowed)}")
+              for member in members:
+                  path = PurePosixPath(member.name)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise SystemExit(f"unsafe sdist path: {member.name}")
+                  if not (member.isdir() or member.isfile()):
+                      raise SystemExit(f"sdist contains link or special file: {member.name}")
+          PY

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Private runtime data
+config.json
+session-state.json
+prompt-controls/
+*.log
+*.lock
+*.bak
+directives/
+profiles/
+prefills/
+prefill*.json
+
+# Caches and test output
+.pi-subagents/
+.pytest_cache/
+.ruff_cache/
+coverage.xml
+htmlcov/
+
+# Editor and OS
+.vscode/
+Thumbs.db
+desktop.ini
