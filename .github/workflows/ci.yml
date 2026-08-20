@@ -27,18 +27,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install build tools
-        run: python -m pip install --disable-pip-version-check build twine
       - name: Check out the pinned Hermes Agent host
         shell: bash
         run: |
           git clone --filter=blob:none https://github.com/NousResearch/hermes-agent.git "$RUNNER_TEMP/hermes-agent"
           git -C "$RUNNER_TEMP/hermes-agent" checkout --detach "$HERMES_COMMIT"
-      - name: Install host and plugin
+      - name: Install host, plugin, and build tools
         shell: bash
         run: |
           python -m pip install -e "$RUNNER_TEMP/hermes-agent"
           python -m pip install -e .
+          python -m pip install --upgrade build twine packaging
       - name: Compile source and tests
         run: python -m compileall -q src tests
       - name: Run compatibility tests
